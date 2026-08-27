@@ -8,11 +8,12 @@ Original file is located at
 """
 
 import streamlit as st
-import pandas as pd
 import joblib
+import numpy as np
+import pandas as pd
 
 # Load model and scaler
-model1 = joblib.load("diabetes_logistic_model.pkl")
+model = joblib.load("diabetes_logistic_model.pkl")
 scaler = joblib.load("scaler.pkl")
 
 st.title("Diabetes Prediction")
@@ -85,10 +86,10 @@ if st.button("Predict"):
     input_scaled = scaler.transform(input_data)
 
     # Prediction
-    prediction = model1.predict(input_scaled)[0]
+    prediction = model.predict(input_scaled)[0]
 
     # Probability
-    probability = model1.predict_proba(input_scaled)[0][1]
+    probability = model.predict_proba(input_scaled)[0][1]
 
     st.subheader("Prediction Result")
 
