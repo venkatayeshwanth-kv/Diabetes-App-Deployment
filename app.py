@@ -8,12 +8,13 @@ Original file is located at
 """
 
 import streamlit as st
-import pickle
+import joblib
 import numpy as np
+import pandas as pd
 
-# Load trained model
-with open("diabetes_logistic_model.pkl", "rb") as file:
-    model = pickle.load(file)
+# Load model and scaler
+model1 = joblib.load("diabetes_logistic_model.pkl")
+scaler = joblib.load("scaler.pkl")
 
 # Page configuration
 st.set_page_config(page_title="Diabetes Prediction",page_icon="🩺",layout="centered")
@@ -58,20 +59,35 @@ if st.button("Predict Diabetes"):
         age
     ]])
 
-    # Prediction
-    prediction = model.predict(input_data)[0]
+    if st.button("Predict"):
 
-    # Prediction probability
-    probability = model.predict_proba(input_data)[0][1]
+        input_data = pd.DataFrame({
+            "Pregnancies": [pregnancies],
+            "Glucose": [glucose],
+            "BloodPressure": [blood_pressure],
+            "SkinThickness": [skin_thickness],
+            "Insulin": [insulin],
+            "BMI": [bmi],
+            "DiabetesPedigreeFunction": [diabetes_pedigree],
+            "Age": [age]
+        })
 
-    # Display result
-    st.subheader("Prediction Result")
+        # Scale input using the saved scaler
+        input_scaled = scaler.transform(input_data)
 
-    if prediction == 1:
-        st.error("⚠️ Diabetes Detected")
-    else:
-        st.success("✅ No Diabetes Detected")
+        # Prediction
+        prediction = model1.predict(input_scaled)[0]
 
-    st.write(
-        f"Probability of diabetes: **{probability * 100:.2f}%**"
-    )
+        # Probability
+        probability = model1.predict_proba(input_scaled)[0][1]
+
+        st.subheader("Prediction Result")
+
+        st.write(
+            f"Diabetes Probability: {probability:.2%}"
+        )
+
+        if prediction == 1:
+            st.error("Prediction: Diabetes")
+        else:
+            st.success("Prediction: No Diabetes")
